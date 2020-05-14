@@ -1,11 +1,11 @@
 package chat_client;
 
-import java.awt.Color;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.DefaultListModel;
-import javax.swing.event.ListSelectionEvent;
+import javax.swing.JOptionPane;
 
 public class client_frame extends javax.swing.JFrame 
 {
@@ -19,6 +19,7 @@ public class client_frame extends javax.swing.JFrame
     BufferedReader reader;
     PrintWriter writer;
     DefaultListModel ListUser;
+    
     
     //--------------------------//
     
@@ -39,19 +40,15 @@ public class client_frame extends javax.swing.JFrame
     
     public void userRemove(String data) 
     {
-         ta_chat.append(data + " is now offline.\n");
+         ta_chat.append(data + " đã rời đi.\n");
     }
     
     //--------------------------//
     
-    public void writeUsers() 
+    public void updateListUser() 
     {
          String[] tempList = new String[(users.size())];
          users.toArray(tempList);
-         for (String token:tempList) 
-         {
-             //users.append(token + "\n");
-         }
     }
     
     //--------------------------//
@@ -65,7 +62,7 @@ public class client_frame extends javax.swing.JFrame
             writer.flush(); 
         } catch (Exception e) 
         {
-            ta_chat.append("Could not send Disconnect message.\n");
+            ta_chat.append("Disconnect thất bại.\n");
         }
     }
 
@@ -75,13 +72,15 @@ public class client_frame extends javax.swing.JFrame
     {
         try 
         {
-            ta_chat.append("Disconnected.\n");
+            ta_chat.append("Ngắt kết nối.\n");
+            ListUser.clear();
             sock.close();
         } catch(Exception ex) {
-            ta_chat.append("Failed to disconnect. \n");
+            ta_chat.append("Ngắt kết nối thất bại. \n");
         }
         isConnected = false;
         tf_username.setEditable(true);
+        tf_password.setEditable(true);
 
     }
     
@@ -90,7 +89,6 @@ public class client_frame extends javax.swing.JFrame
         initComponents(); // chạy giao diện
         ListUser = new DefaultListModel();
         jList1.setModel(ListUser); // set ListUser
-        System.out.println("Done");
     }
     
     public void loadListUser(){
@@ -106,23 +104,22 @@ public class client_frame extends javax.swing.JFrame
     
     //--------------------------//
     
-    public class IncomingReader implements Runnable
+    public class IncomingReader extends Thread
     {
         @Override
         public void run() 
         {
             String[] data;
-            String stream, done = "Done", connect = "Connect", disconnect = "Disconnect", chat = "Chat",inbox=" Inbox";
+            String stream, done = "Done", connect = "Connect", disconnect = "Disconnect", chat = "Chat",inbox="Inbox";
             try 
             {
                 while ((stream = reader.readLine()) != null) 
                 {
                      data = stream.split(":");
-
+                     
                      if (data[2].equals(chat)) 
                      {
                         ta_chat.append(data[0] + ": " + data[1] + "\n");
-                        ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
                      } 
                      else if (data[2].equals(connect))
                      {
@@ -137,14 +134,11 @@ public class client_frame extends javax.swing.JFrame
                      } 
                      else if (data[2].equals(done)) 
                      {
-                        //users.setText("");
-                        writeUsers();
+                        updateListUser();
                         users.clear();
                      }
                      else if(data[2].equals(inbox)){
-                         System.out.println("inbox"+data);
-                         ta_chat.append(data[0] + ": " + data[1] + "\n");
-                         ta_chat.setCaretPosition(ta_chat.getDocument().getLength());
+                         ta_chat.append("<Inbox> "+data[0] + ": " + data[1] + "\n");
                      }
                 }
            }catch(Exception ex) { }
@@ -160,7 +154,6 @@ public class client_frame extends javax.swing.JFrame
         lb_username = new javax.swing.JLabel();
         tf_username = new javax.swing.JTextField();
         lb_password = new javax.swing.JLabel();
-        tf_password = new javax.swing.JTextField();
         b_connect = new javax.swing.JButton();
         b_disconnect = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -172,6 +165,7 @@ public class client_frame extends javax.swing.JFrame
         jList1 = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        tf_password = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Chat - Client's frame");
@@ -215,11 +209,6 @@ public class client_frame extends javax.swing.JFrame
 
         lb_name.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 jList1ValueChanged(evt);
@@ -238,43 +227,38 @@ public class client_frame extends javax.swing.JFrame
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(50, 50, 50)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lb_password)
-                                    .addComponent(lb_username, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(tf_password, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
-                                    .addComponent(tf_username))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(b_connect, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(b_disconnect, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel1)
-                                .addGap(24, 24, 24))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
-                                    .addComponent(tf_chat))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2)
-                                    .addComponent(b_send, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(lb_name)
-                        .addGap(201, 201, 201))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(115, Short.MAX_VALUE)
+                            .addComponent(lb_password)
+                            .addComponent(lb_username, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(tf_username, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                            .addComponent(tf_password))
+                        .addGap(32, 32, 32)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(b_connect, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(b_disconnect, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
+                        .addGap(63, 63, 63)
+                        .addComponent(jLabel1)
+                        .addGap(28, 28, 28))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tf_chat)
+                            .addComponent(jScrollPane1))
+                        .addGap(30, 30, 30)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(lb_name)
+                                .addComponent(b_send, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(30, 30, 30))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(111, 111, 111)
                 .addComponent(jLabel2)
-                .addGap(101, 101, 101))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -288,10 +272,10 @@ public class client_frame extends javax.swing.JFrame
                     .addComponent(b_connect))
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tf_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lb_password)
                     .addComponent(b_disconnect)
-                    .addComponent(jLabel1))
+                    .addComponent(jLabel1)
+                    .addComponent(tf_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
@@ -315,29 +299,39 @@ public class client_frame extends javax.swing.JFrame
         if (isConnected == false) 
         {
             username = tf_username.getText();
+            String password =String.valueOf(tf_password.getPassword());
+            System.err.println(password);
+            if(username == null || username.isEmpty()){
+                JOptionPane.showMessageDialog(null, "Vui lòng nhập username", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if(!password.equals("123") ){
+                JOptionPane.showMessageDialog(null, "Sai mật khẩu", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             tf_username.setEditable(false);
-
+            tf_password.setEditable(false);
+            ta_chat.setEditable(false);
             try 
             {
                 sock = new Socket(address, port);
                 InputStreamReader streamreader = new InputStreamReader(sock.getInputStream()); 
-                reader = new BufferedReader(streamreader); //đọc dữ liệu
-                writer = new PrintWriter(sock.getOutputStream()); //viết dữ liệu
-                writer.println(username + ":has connected.:Connect");
+                reader = new BufferedReader(streamreader);
+                writer = new PrintWriter(sock.getOutputStream()); 
+                writer.println(username + ":đã kết nối:Connect");
                 writer.flush(); 
                 isConnected = true; 
+                ListenThread();
             } 
             catch (Exception ex) 
             {
-                ta_chat.append("Cannot Connect! Try Again. \n");
+                ta_chat.append("Kết nối thất bại. Hãy thử lại!\n");
                 tf_username.setEditable(true);
+                tf_password.setEditable(true);
             }
-            
-            ListenThread();
-            
         } else if (isConnected == true) 
         {
-            ta_chat.append("You are already connected. \n");
+            ta_chat.append("Bạn đã tham gia. \n");
         }
     }//GEN-LAST:event_b_connectActionPerformed
 
@@ -360,12 +354,14 @@ public class client_frame extends javax.swing.JFrame
                {
 //                   ta_chat.append(username+":"+tf_chat.getText());
                    writer.println(username + ":" + tf_chat.getText() + ":" + "Inbox"+":"+clientID);
+                   ta_chat.append("<Inbox cho "+clientID+">"+username + ":" + tf_chat.getText()+"\n");
                    writer.flush(); // flushes the buffer
                    jList1.clearSelection();
                    clientID ="";
+                   
                }
             } catch (Exception ex) {
-                ta_chat.append("Message was not sent. \n");
+                ta_chat.append("Tin nhắn không gửi được. \n");
             }
             tf_chat.setText("");
             tf_chat.requestFocus();
@@ -382,7 +378,7 @@ public class client_frame extends javax.swing.JFrame
 
     public static void main(String args[]) 
     {
-        java.awt.EventQueue.invokeLater(new Runnable() 
+        java.awt.EventQueue.invokeLater(new Thread() 
         {
             @Override
             public void run() 
@@ -408,7 +404,7 @@ public class client_frame extends javax.swing.JFrame
     private javax.swing.JLabel lb_username;
     private javax.swing.JTextArea ta_chat;
     private javax.swing.JTextField tf_chat;
-    private javax.swing.JTextField tf_password;
+    private javax.swing.JPasswordField tf_password;
     private javax.swing.JTextField tf_username;
     // End of variables declaration//GEN-END:variables
 }
