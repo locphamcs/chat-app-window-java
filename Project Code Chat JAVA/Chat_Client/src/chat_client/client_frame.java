@@ -43,15 +43,6 @@ public class client_frame extends javax.swing.JFrame
          ta_chat.append(data + " đã rời đi.\n");
     }
     
-    //--------------------------//
-    
-    public void updateListUser() 
-    {
-         String[] tempList = new String[(users.size())];
-         users.toArray(tempList);
-    }
-    
-    //--------------------------//
     
     public void sendDisconnect() 
     {
@@ -92,6 +83,7 @@ public class client_frame extends javax.swing.JFrame
     }
     
     public void loadListUser(){
+        System.out.println("abc:"+users.size());
         ListUser.clear();
         for(int i=0;i<users.size();i++){
             if(!username.equals(users.get(i))){
@@ -134,7 +126,6 @@ public class client_frame extends javax.swing.JFrame
                      } 
                      else if (data[2].equals(done)) 
                      {
-                        updateListUser();
                         users.clear();
                      }
                      else if(data[2].equals(inbox)){
